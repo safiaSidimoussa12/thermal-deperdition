@@ -43,18 +43,33 @@ public class Batiment implements Serializable {
      * Consommation energetique annuelle en kWh/m2/an.
      *
      * Formule : (deperditionTotale x deltaT x heuresChauffage) / (1000 x surface)
-     * - deperditionTotale : somme U*S de tous les elements (W/K)
-     * - deltaT = 15 C : ecart interieur(20C) / exterieur(5C)
-     * - heuresChauffage : 1800 h/an (standard RT2012)
-     * - / 1000 : W -> kW
-     * - / surface : ramene au m2
      *
-     * Resultat en kWh/m2/an, comparable au bareme DPE A a G.
+     * deltaT est determine dynamiquement selon la zone climatique :
+     * Zone H1 (Grand Nord / montagne) : deltaT = 22 C (Text = -2 C)
+     * Zone H2 (Centre / Bretagne) : deltaT = 15 C (Text = 5 C)
+     * Zone H3 (Mediterranee / Sud) : deltaT = 12 C (Text = 8 C)
+     * Zone H4 (DOM-TOM) : deltaT = 2 C (Text = 18 C)
+     * Par defaut (zone non definie) : deltaT = 15 C
+     *
+     * heuresChauffage = 1800 h/an (standard RT2012)
      */
     public double calculerConsommation() {
         if (surface == 0)
             return 0;
-        final double deltaT = 15.0;
+
+        double deltaT = 15.0; // valeur par defaut Zone H2
+        if (zoneClimatique != null) {
+            String zone = zoneClimatique.getNomZoneClimatique();
+            if (zone.contains("H1"))
+                deltaT = 22.0;
+            else if (zone.contains("H2"))
+                deltaT = 15.0;
+            else if (zone.contains("H3"))
+                deltaT = 12.0;
+            else if (zone.contains("H4"))
+                deltaT = 2.0;
+        }
+
         final double heuresChauffage = 1800.0;
         return (calculerDeperdition() * deltaT * heuresChauffage) / (1000.0 * surface);
     }
