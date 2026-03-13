@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThermoCalc — Nouveau Bâtiment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f7ff;
+            --surface: #ffffff;
+            --surface2: #f8faff;
+            --border: #e2e8f0;
+            --border-focus: #93c5fd;
+            --accent: #3b82f6;
+            --accent-soft: #eff6ff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --muted2: #475569;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse 70% 50% at 10% 0%, rgba(59, 130, 246, 0.08) 0%, transparent 55%),
+                radial-gradient(ellipse 50% 40% at 90% 100%, rgba(6, 182, 212, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 40px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo span {
+            -webkit-text-fill-color: #cbd5e1;
+        }
+
+        .nav-back {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--muted);
+            font-size: 0.85rem;
+            text-decoration: none;
+            padding: 7px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .nav-back:hover {
+            color: var(--text);
+            border-color: #93c5fd;
+            background: var(--accent-soft);
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 44px 24px 80px;
+        }
+
+        /* Steps */
+        .steps {
+            display: flex;
+            align-items: center;
+            margin-bottom: 44px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-num {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .step-item.active .step-num {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        .step-item.pending .step-num {
+            background: var(--surface);
+            color: var(--muted);
+            border: 1.5px solid var(--border);
+        }
+
+        .step-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .step-item.active .step-label {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .step-item.pending .step-label {
+            color: var(--muted);
+        }
+
+        .step-connector {
+            flex: 1;
+            height: 1.5px;
+            background: var(--border);
+            margin: 0 14px;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-header h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.7rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .page-header p {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .form-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 26px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .form-section:nth-child(2) {
+            animation-delay: 0.05s;
+        }
+
+        .form-section:nth-child(3) {
+            animation-delay: 0.1s;
+        }
+
+        .form-section:nth-child(4) {
+            animation-delay: 0.15s;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            background: var(--accent-soft);
+            border: 1px solid #bfdbfe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .section-header h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .grid2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .grid3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+        }
+
+        .mb14 {
+            margin-bottom: 14px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--muted2);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        input,
+        select {
+            background: var(--surface2);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 13px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+
+        input::placeholder {
+            color: var(--muted);
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: white;
+        }
+
+        select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 13px center;
+            padding-right: 36px;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .form-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding-top: 4px;
+        }
+
+        .btn-note {
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+
+        .btn-submit {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            font-weight: 600;
+            font-size: 0.92rem;
+            padding: 12px 26px;
+            border-radius: 11px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 18px rgba(59, 130, 246, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(59, 130, 246, 0.4);
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            nav {
+                padding: 12px 18px;
+            }
+
+            .grid2,
+            .grid3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="logo">Thermo<span>Calc</span></div>
+        <a href="/" class="nav-back">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 5l-7 7 7 7" />
+            </svg>
+            Accueil
+        </a>
+    </nav>
+
+    <div class="page">
+        <div class="steps">
+            <div class="step-item active">
+                <div class="step-num">1</div>
+                <div class="step-label">Bâtiment</div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step-item pending">
+                <div class="step-num">2</div>
+                <div class="step-label">Éléments</div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step-item pending">
+                <div class="step-num">3</div>
+                <div class="step-label">Résultats</div>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Informations du bâtiment</h1>
+            <p>Renseignez les caractéristiques générales de votre bâtiment</p>
+        </div>
+
+        <form action="/batiment/creer" method="post">
+
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">🏢</div>
+                    <h2>Identification</h2>
+                </div>
+                <div class="grid2 mb14">
+                    <div class="field">
+                        <label>Code Bâtiment</label>
+                        <input type="text" name="codeBatiment" placeholder="BAT-001" required>
+                    </div>
+                    <div class="field">
+                        <label>Type de Bâtiment</label>
+                        <select name="typeBatiment" required>
+                            <option value="">Sélectionner…</option>
+                            <option>Maison individuelle</option>
+                            <option>Immeuble résidentiel</option>
+                            <option>Bureau</option>
+                            <option>École</option>
+                            <option>Hôpital</option>
+                            <option>Entrepôt</option>
+                            <option>Commerce</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field mb14">
+                    <label>Adresse</label>
+                    <input type="text" name="adresseBatiment" placeholder="10 rue de la Paix, 75001 Paris" required>
+                </div>
+                <div class="field">
+                    <label>Coordonnées géographiques</label>
+                    <input type="text" name="coordonneesGeographiques" placeholder="48.8566° N, 2.3522° E">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">📐</div>
+                    <h2>Caractéristiques physiques</h2>
+                </div>
+                <div class="grid3 mb14">
+                    <div class="field">
+                        <label>Surface (m²)</label>
+                        <input type="number" name="surface" step="0.01" min="1" placeholder="150" required>
+                    </div>
+                    <div class="field">
+                        <label>Volume (m³)</label>
+                        <input type="number" name="volume" step="0.01" min="1" placeholder="450" required>
+                    </div>
+                    <div class="field">
+                        <label>Année construction</label>
+                        <input type="number" name="anneeConstruction" min="1800" max="2026" placeholder="1990" required>
+                    </div>
+                </div>
+                <div class="grid2">
+                    <div class="field">
+                        <label>Nombre de niveaux</label>
+                        <input type="number" name="nombreNiveaux" min="1" placeholder="3" required>
+                    </div>
+                    <div class="field">
+                        <label>Nombre d'occupants</label>
+                        <input type="number" name="nombreOccupants" min="0" placeholder="10" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">⚡</div>
+                    <h2>Zone climatique & Énergie</h2>
+                </div>
+                <div class="grid2">
+                    <div class="field">
+                        <label>Zone Climatique</label>
+                        <select name="nomZone" required>
+                            <option value="">Sélectionner…</option>
+                            <option>Zone H1 (Grand Nord / montagne)</option>
+                            <option>Zone H2 (Centre / Bretagne)</option>
+                            <option>Zone H3 (Méditerranée / Sud)</option>
+                            <option>Zone H4 (DOM-TOM)</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Source d'Énergie</label>
+                        <select name="nomSource" required>
+                            <option value="">Sélectionner…</option>
+                            <option>Gaz naturel</option>
+                            <option>Électricité</option>
+                            <option>Fioul domestique</option>
+                            <option>Bois / Biomasse</option>
+                            <option>Pompe à chaleur</option>
+                            <option>Solaire thermique</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-footer">
+                <span class="btn-note">Tous les champs * sont obligatoires</span>
+                <button type="submit" class="btn-submit">
+                    Continuer
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

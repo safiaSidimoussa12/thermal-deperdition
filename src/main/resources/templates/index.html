@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThermoCalc — Déperditions Thermiques</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f7ff;
+            --surface: #ffffff;
+            --surface2: #f0f3ff;
+            --border: #e2e8f0;
+            --accent: #3b82f6;
+            --accent2: #06b6d4;
+            --accent-soft: #eff6ff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --muted2: #94a3b8;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% -10%, rgba(59, 130, 246, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 85% 90%, rgba(6, 182, 212, 0.08) 0%, transparent 55%);
+            pointer-events: none;
+        }
+
+        /* ── Nav ── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 48px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo span {
+            -webkit-text-fill-color: #cbd5e1;
+        }
+
+        .nav-badge {
+            font-size: 0.72rem;
+            font-weight: 500;
+            background: var(--accent-soft);
+            border: 1px solid #bfdbfe;
+            color: #2563eb;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 24px 80px;
+            text-align: center;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent-soft);
+            border: 1px solid #bfdbfe;
+            color: #2563eb;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 30px;
+            margin-bottom: 32px;
+            animation: fadeUp 0.6s ease both;
+        }
+
+        .hero-tag::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #3b82f6;
+            animation: pulse 2s ease infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.4;
+                transform: scale(1.6);
+            }
+        }
+
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(2.6rem, 7vw, 5rem);
+            font-weight: 800;
+            line-height: 1.06;
+            letter-spacing: -0.03em;
+            margin-bottom: 24px;
+            animation: fadeUp 0.6s 0.1s ease both;
+        }
+
+        h1 .line1 {
+            display: block;
+            color: #0f172a;
+        }
+
+        h1 .line2 {
+            display: block;
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 50%, #10b981 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-sub {
+            font-size: 1.05rem;
+            color: var(--muted);
+            max-width: 500px;
+            line-height: 1.75;
+            margin-bottom: 48px;
+            animation: fadeUp 0.6s 0.2s ease both;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeUp 0.6s 0.3s ease both;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 14px 28px;
+            border-radius: 12px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 24px rgba(59, 130, 246, 0.35);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 32px rgba(59, 130, 246, 0.45);
+        }
+
+        .btn-ghost {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface);
+            color: var(--muted);
+            font-size: 0.9rem;
+            padding: 14px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            border: 1px solid var(--border);
+            transition: color 0.2s, border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-ghost:hover {
+            color: var(--text);
+            border-color: #93c5fd;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+        }
+
+        /* ── Features ── */
+        .features {
+            position: relative;
+            z-index: 1;
+            max-width: 960px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            padding: 0 24px 80px;
+            animation: fadeUp 0.6s 0.4s ease both;
+        }
+
+        .feat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 22px 18px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+            transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feat-card:hover {
+            border-color: #93c5fd;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.1);
+        }
+
+        .feat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 14px;
+        }
+
+        .feat-card:nth-child(1) .feat-icon {
+            background: #eff6ff;
+        }
+
+        .feat-card:nth-child(2) .feat-icon {
+            background: #ecfeff;
+        }
+
+        .feat-card:nth-child(3) .feat-icon {
+            background: #f0fdf4;
+        }
+
+        .feat-card:nth-child(4) .feat-icon {
+            background: #fffbeb;
+        }
+
+        .feat-card h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .feat-card p {
+            font-size: 0.78rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* ── DPE ── */
+        .dpe-section {
+            position: relative;
+            z-index: 1;
+            max-width: 580px;
+            margin: 0 auto 80px;
+            padding: 0 24px;
+            animation: fadeUp 0.6s 0.5s ease both;
+        }
+
+        .dpe-section h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .dpe-strip {
+            display: flex;
+            gap: 6px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .dpe-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 4px;
+            border-radius: 10px;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .dpe-item:hover {
+            transform: scale(1.06);
+            background: var(--surface2);
+        }
+
+        .dpe-letter-big {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1rem;
+            color: white;
+        }
+
+        .dpe-kwh {
+            font-size: 0.6rem;
+            color: var(--muted);
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                padding: 14px 20px;
+            }
+
+            .features {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="logo">Thermo<span>Calc</span></div>
+
+    </nav>
+
+    <section class="hero">
+        <div class="hero-tag">Outil de diagnostic énergétique</div>
+        <h1>
+            <span class="line1">Calculez vos</span>
+            <span class="line2">Déperditions Thermiques</span>
+        </h1>
+        <p class="hero-sub">
+            Analysez l'enveloppe thermique de votre bâtiment, obtenez sa classification DPE
+            et identifiez les points de déperdition énergétique.
+        </p>
+        <div class="hero-actions">
+            <a href="/batiment/nouveau" class="btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M12 5v14M5 12h14" />
+                </svg>
+                Nouveau bâtiment
+            </a>
+            <a href="#dpe" class="btn-ghost">
+                Voir le barème DPE
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9l6 6 6-6" />
+                </svg>
+            </a>
+        </div>
+    </section>
+
+    <div class="features">
+        <div class="feat-card">
+            <div class="feat-icon">🧱</div>
+            <h3>Murs & Parois</h3>
+            <p>Calcul par surface et coefficient de transmission thermique K</p>
+        </div>
+        <div class="feat-card">
+            <div class="feat-icon">🪟</div>
+            <h3>Ouvrants</h3>
+            <p>Fenêtres, portes — simple, double et triple vitrage</p>
+        </div>
+        <div class="feat-card">
+            <div class="feat-icon">🪨</div>
+            <h3>Planchers</h3>
+            <p>Béton, bois, parquet — isolé ou non isolé</p>
+        </div>
+        <div class="feat-card">
+            <div class="feat-icon">🏠</div>
+            <h3>Toitures</h3>
+            <p>Plate ou inclinée, terrasse isolée ou tuiles</p>
+        </div>
+    </div>
+
+    <div class="dpe-section" id="dpe">
+        <h2>Barème DPE · kWh/m²/an</h2>
+        <div class="dpe-strip">
+            <div class="dpe-item">
+                <div class="dpe-letter-big" style="background:#1a6b2e">A</div>
+                <div class="dpe-kwh">≤ 70</div>
+            </div>
+            <div class="dpe-item">
+                <div class="dpe-letter-big" style="background:#3a7d29">B</div>
+                <div class="dpe-kwh">71–110</div>
+            </div>
+            <div class="dpe-item">
+                <div class="dpe-letter-big" style="background:#b8860b">C</div>
+                <div class="dpe-kwh">111–180</div>
+            </div>
+            <div class="dpe-item">
+                <div class="dpe-letter-big" style="background:#c45a00">D</div>
+                <div class="dpe-kwh">181–250</div>
+            </div>
+            <div class="dpe-item">
+                <div class="dpe-letter-big" style="background:#c0392b">E</div>
+                <div class="dpe-kwh">251–330</div>
+            </div>
+            <div class="dpe-item">
+                <div class="dpe-letter-big" style="background:#922b21">F</div>
+                <div class="dpe-kwh">331–420</div>
+            </div>
+            <div class="dpe-item">
+                <div class="dpe-letter-big" style="background:#4a0000">G</div>
+                <div class="dpe-kwh">> 420</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

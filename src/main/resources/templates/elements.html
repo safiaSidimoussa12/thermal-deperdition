@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThermoCalc — Éléments</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f7ff;
+            --surface: #ffffff;
+            --surface2: #f8faff;
+            --border: #e2e8f0;
+            --border-focus: #93c5fd;
+            --accent: #3b82f6;
+            --accent-soft: #eff6ff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --muted2: #475569;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse 60% 40% at 5% 5%, rgba(59, 130, 246, 0.07) 0%, transparent 55%),
+                radial-gradient(ellipse 50% 40% at 95% 95%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px 32px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+            gap: 16px;
+        }
+
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            flex-shrink: 0;
+        }
+
+        .logo span {
+            -webkit-text-fill-color: #cbd5e1;
+        }
+
+        .nav-center {
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+
+        .nav-step {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 14px;
+            font-size: 0.78rem;
+        }
+
+        .nav-step .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        .nav-step.done .dot {
+            background: var(--success);
+        }
+
+        .nav-step.active .dot {
+            background: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .nav-step.pending .dot {
+            background: var(--border);
+            border: 1.5px solid var(--muted2);
+        }
+
+        .nav-step.done span {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .nav-step.active span {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .nav-step.pending span {
+            color: var(--muted);
+        }
+
+        .nav-sep {
+            color: var(--border);
+        }
+
+        .bat-chip {
+            font-size: 0.75rem;
+            color: var(--muted);
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            padding: 5px 13px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        /* Layout */
+        .layout {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 22px 24px 80px;
+        }
+
+        /* Action bar */
+        .action-bar {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 20px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        .counters {
+            display: flex;
+            gap: 24px;
+        }
+
+        .counter {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .counter-text {
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+
+        .counter-text strong {
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .bar-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-calc {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            font-weight: 600;
+            font-size: 0.87rem;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            box-shadow: 0 3px 12px rgba(16, 185, 129, 0.25);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-calc:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-reset {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            color: var(--muted);
+            font-size: 0.82rem;
+            padding: 10px 16px;
+            border-radius: 10px;
+            text-decoration: none;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .btn-reset:hover {
+            color: #ef4444;
+            border-color: #fca5a5;
+            background: #fef2f2;
+        }
+
+        /* Element cards */
+        .el-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .el-card:hover {
+            border-color: #93c5fd;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.08);
+        }
+
+        .el-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface2);
+        }
+
+        .el-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .el-card:nth-child(2) .el-icon {
+            background: #eff6ff;
+        }
+
+        .el-card:nth-child(3) .el-icon {
+            background: #ecfeff;
+        }
+
+        .el-card:nth-child(4) .el-icon {
+            background: #f0fdf4;
+        }
+
+        .el-card:nth-child(5) .el-icon {
+            background: #fffbeb;
+        }
+
+        .el-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .el-count {
+            margin-left: auto;
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: var(--accent-soft);
+            color: var(--accent);
+            border: 1px solid #bfdbfe;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .el-form {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .frow {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .frow.full {
+            grid-template-columns: 1fr;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        input,
+        select {
+            background: var(--surface2);
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            padding: 9px 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.87rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input::placeholder {
+            color: var(--muted);
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: white;
+        }
+
+        select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 32px;
+        }
+
+        .btn-add {
+            width: 100%;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            border: 1.5px dashed #bfdbfe;
+            border-radius: 9px;
+            padding: 9px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.83rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-add:hover {
+            background: #dbeafe;
+            border-color: var(--accent);
+        }
+
+        .el-list {
+            padding: 12px 18px;
+            min-height: 56px;
+        }
+
+        .empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px;
+            color: var(--muted);
+            font-size: 0.8rem;
+            border: 1.5px dashed var(--border);
+            border-radius: 10px;
+            background: var(--surface2);
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            border-radius: 9px;
+            background: var(--surface2);
+            margin-bottom: 6px;
+            border: 1px solid var(--border);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .item-label {
+            font-size: 0.8rem;
+        }
+
+        .item-label strong {
+            display: block;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.83rem;
+        }
+
+        .item-label span {
+            color: var(--muted);
+        }
+
+        .item-dep {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--accent);
+            background: var(--accent-soft);
+            border: 1px solid #bfdbfe;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .counters {
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="logo">Thermo<span>Calc</span></div>
+        <div class="nav-center">
+            <div class="nav-step done">
+                <div class="dot"></div><span>Bâtiment</span>
+            </div>
+            <div class="nav-sep">›</div>
+            <div class="nav-step active">
+                <div class="dot"></div><span>Éléments</span>
+            </div>
+            <div class="nav-sep">›</div>
+            <div class="nav-step pending">
+                <div class="dot"></div><span>Résultats</span>
+            </div>
+        </div>
+        <div class="bat-chip" th:text="'📍 ' + ${batiment.codeBatiment} + ' · ' + ${batiment.surface} + ' m²'"></div>
+    </nav>
+
+    <div class="layout">
+
+        <div class="action-bar">
+            <div class="counters">
+                <div class="counter"><span>🧱</span><span class="counter-text"><strong
+                            th:text="${#lists.size(batiment.murs)}">0</strong> murs</span></div>
+                <div class="counter"><span>🪟</span><span class="counter-text"><strong
+                            th:text="${#lists.size(batiment.ouvrants)}">0</strong> ouvrants</span></div>
+                <div class="counter"><span>🪨</span><span class="counter-text"><strong
+                            th:text="${#lists.size(batiment.planchers)}">0</strong> planchers</span></div>
+                <div class="counter"><span>🏠</span><span class="counter-text"><strong
+                            th:text="${#lists.size(batiment.toitures)}">0</strong> toitures</span></div>
+            </div>
+            <div class="bar-actions">
+                <a href="/reset" class="btn-reset">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                    </svg>
+                    Réinitialiser
+                </a>
+                <a href="/batiment/calculer" class="btn-calc">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
+                    Calculer la déperdition
+                </a>
+            </div>
+        </div>
+
+        <!-- MUR -->
+        <div class="el-card">
+            <div class="el-header">
+                <div class="el-icon">🧱</div>
+                <div class="el-title">Murs</div>
+                <div class="el-count" th:text="${#lists.size(batiment.murs)} + ' ajouté(s)'"></div>
+            </div>
+            <div class="el-form">
+                <form action="/batiment/ajouterMur" method="post">
+                    <div class="frow">
+                        <div class="field"><label>Longueur (m)</label><input type="number" name="longueurMur"
+                                step="0.01" min="0.1" placeholder="5.0" required></div>
+                        <div class="field"><label>Hauteur (m)</label><input type="number" name="hauteurMur" step="0.01"
+                                min="0.1" placeholder="2.8" required></div>
+                    </div>
+                    <div class="frow">
+                        <div class="field">
+                            <label>Type de mur</label>
+                            <select name="typeMur" required>
+                                <th:block th:each="entry : ${kMurs}">
+                                    <option th:value="${entry.key}" th:text="${entry.key}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>État</label>
+                            <select name="etatMur">
+                                <option>Bon état</option>
+                                <option>État moyen</option>
+                                <option>Mauvais état</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-add">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        Ajouter ce mur
+                    </button>
+                </form>
+            </div>
+            <div class="el-list">
+                <div class="empty-state" th:if="${#lists.isEmpty(batiment.murs)}">Aucun mur ajouté</div>
+                <div class="item-row" th:each="m : ${batiment.murs}">
+                    <div class="item-label">
+                        <strong th:text="'Mur #' + ${m.numeroMur}"></strong>
+                        <span th:text="${m.longueurMur} + 'm × ' + ${m.hauteurMur} + 'm — k=' + ${m.kMur}"></span>
+                    </div>
+                    <div class="item-dep" th:text="${#numbers.formatDecimal(m.calculerDeperditionMur(),1,1)} + ' W'">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OUVRANT -->
+        <div class="el-card">
+            <div class="el-header">
+                <div class="el-icon">🪟</div>
+                <div class="el-title">Ouvrants</div>
+                <div class="el-count" th:text="${#lists.size(batiment.ouvrants)} + ' ajouté(s)'"></div>
+            </div>
+            <div class="el-form">
+                <form action="/batiment/ajouterOuvrant" method="post">
+                    <div class="frow">
+                        <div class="field"><label>Surface (m²)</label><input type="number" name="surfaceOuvrant"
+                                step="0.01" min="0.1" placeholder="1.5" required></div>
+                        <div class="field"><label>État</label><select name="etatOuvrant">
+                                <option>Bon état</option>
+                                <option>État moyen</option>
+                                <option>Mauvais état</option>
+                            </select></div>
+                    </div>
+                    <div class="frow full">
+                        <div class="field">
+                            <label>Type d'ouvrant</label>
+                            <select name="typeOuvrant" required>
+                                <th:block th:each="entry : ${kOuvrants}">
+                                    <option th:value="${entry.key}" th:text="${entry.key}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-add">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        Ajouter cet ouvrant
+                    </button>
+                </form>
+            </div>
+            <div class="el-list">
+                <div class="empty-state" th:if="${#lists.isEmpty(batiment.ouvrants)}">Aucun ouvrant ajouté</div>
+                <div class="item-row" th:each="o : ${batiment.ouvrants}">
+                    <div class="item-label">
+                        <strong th:text="'Ouvrant #' + ${o.numeroOuvrant}"></strong>
+                        <span th:text="${o.surfaceOuvrant} + ' m² — k=' + ${o.kOuvrant}"></span>
+                    </div>
+                    <div class="item-dep"
+                        th:text="${#numbers.formatDecimal(o.calculerDeperditionOuvrant(),1,1)} + ' W'"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLANCHER -->
+        <div class="el-card">
+            <div class="el-header">
+                <div class="el-icon">🪨</div>
+                <div class="el-title">Planchers</div>
+                <div class="el-count" th:text="${#lists.size(batiment.planchers)} + ' ajouté(s)'"></div>
+            </div>
+            <div class="el-form">
+                <form action="/batiment/ajouterPlancher" method="post">
+                    <div class="frow">
+                        <div class="field"><label>Surface (m²)</label><input type="number" name="surfacePlancher"
+                                step="0.01" min="0.1" placeholder="50" required></div>
+                        <div class="field"><label>État</label><select name="etatPlancher">
+                                <option>Bon état</option>
+                                <option>État moyen</option>
+                                <option>Mauvais état</option>
+                            </select></div>
+                    </div>
+                    <div class="frow full">
+                        <div class="field">
+                            <label>Type de plancher</label>
+                            <select name="typePlancher" required>
+                                <th:block th:each="entry : ${kPlanchers}">
+                                    <option th:value="${entry.key}" th:text="${entry.key}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-add">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        Ajouter ce plancher
+                    </button>
+                </form>
+            </div>
+            <div class="el-list">
+                <div class="empty-state" th:if="${#lists.isEmpty(batiment.planchers)}">Aucun plancher ajouté</div>
+                <div class="item-row" th:each="p : ${batiment.planchers}">
+                    <div class="item-label">
+                        <strong th:text="'Plancher #' + ${p.numeroPlancher}"></strong>
+                        <span th:text="${p.surfacePlancher} + ' m² — k=' + ${p.kPlancher}"></span>
+                    </div>
+                    <div class="item-dep"
+                        th:text="${#numbers.formatDecimal(p.calculerDeperditionPlancher(),1,1)} + ' W'"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOITURE -->
+        <div class="el-card">
+            <div class="el-header">
+                <div class="el-icon">🏠</div>
+                <div class="el-title">Toitures</div>
+                <div class="el-count" th:text="${#lists.size(batiment.toitures)} + ' ajouté(s)'"></div>
+            </div>
+            <div class="el-form">
+                <form action="/batiment/ajouterToiture" method="post">
+                    <div class="frow">
+                        <div class="field"><label>Surface (m²)</label><input type="number" name="surfaceToit"
+                                step="0.01" min="0.1" placeholder="80" required></div>
+                        <div class="field"><label>État</label><select name="etatToiture">
+                                <option>Bon état</option>
+                                <option>État moyen</option>
+                                <option>Mauvais état</option>
+                            </select></div>
+                    </div>
+                    <div class="frow full">
+                        <div class="field">
+                            <label>Type de toiture</label>
+                            <select name="typeToiture" required>
+                                <th:block th:each="entry : ${kToitures}">
+                                    <option th:value="${entry.key}" th:text="${entry.key}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-add">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        Ajouter cette toiture
+                    </button>
+                </form>
+            </div>
+            <div class="el-list">
+                <div class="empty-state" th:if="${#lists.isEmpty(batiment.toitures)}">Aucune toiture ajoutée</div>
+                <div class="item-row" th:each="t : ${batiment.toitures}">
+                    <div class="item-label">
+                        <strong th:text="'Toiture #' + ${t.numeroToiture}"></strong>
+                        <span th:text="${t.surfaceToit} + ' m² — k=' + ${t.kToiture}"></span>
+                    </div>
+                    <div class="item-dep"
+                        th:text="${#numbers.formatDecimal(t.calculerDeperditionToiture(),1,1)} + ' W'"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>

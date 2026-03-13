@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThermoCalc — Résultats</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f7ff;
+            --surface: #ffffff;
+            --surface2: #f8faff;
+            --border: #e2e8f0;
+            --accent: #3b82f6;
+            --accent-soft: #eff6ff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --muted2: #475569;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse 70% 50% at 5% 0%, rgba(59, 130, 246, 0.08) 0%, transparent 55%),
+                radial-gradient(ellipse 50% 40% at 95% 100%, rgba(16, 185, 129, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px 32px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo span {
+            -webkit-text-fill-color: #cbd5e1;
+        }
+
+        .nav-steps {
+            display: flex;
+            align-items: center;
+        }
+
+        .ns {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 13px;
+            font-size: 0.78rem;
+        }
+
+        .ns .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        .ns.done .dot {
+            background: #10b981;
+        }
+
+        .ns.active .dot {
+            background: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .ns.done span {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .ns.active span {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .ns-sep {
+            color: var(--border);
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+        }
+
+        /* Score hero */
+        .score-hero {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 28px;
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px 32px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            animation: fadeUp 0.5s ease both;
+        }
+
+        .score-left h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.45rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .score-left .subtitle {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 26px;
+        }
+
+        .metrics {
+            display: flex;
+            gap: 0;
+        }
+
+        .metric {
+            padding: 0 28px;
+        }
+
+        .metric:first-child {
+            padding-left: 0;
+        }
+
+        .metric+.metric {
+            border-left: 1px solid var(--border);
+        }
+
+        .metric .val {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.9rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .metric .unit {
+            font-size: 0.72rem;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        .metric .lbl {
+            font-size: 0.78rem;
+            color: var(--muted2);
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        /* DPE Badge */
+        .dpe-big {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dpe-circle {
+            width: 84px;
+            height: 84px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 2.8rem;
+            color: white;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .dpe-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .dpe-label strong {
+            display: block;
+            font-size: 0.78rem;
+            color: var(--muted2);
+        }
+
+        /* DPE Scale */
+        .dpe-scale-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 22px 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+            animation: fadeUp 0.5s 0.1s ease both;
+        }
+
+        .dpe-scale-card h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 16px;
+        }
+
+        .dpe-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .dpe-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 7px 10px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            transition: background 0.2s;
+        }
+
+        .dpe-row.highlight {
+            background: var(--surface2);
+            border-color: var(--border);
+        }
+
+        .dpe-letter {
+            width: 34px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 0.82rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .dpe-bar-wrap {
+            flex: 1;
+            height: 7px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .dpe-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+
+        .dpe-range {
+            font-size: 0.7rem;
+            color: var(--muted);
+            width: 120px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .dpe-you {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        /* Totals */
+        .totals-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+            animation: fadeUp 0.5s 0.12s ease both;
+        }
+
+        .total-chip {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .total-chip:hover {
+            border-color: #93c5fd;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
+        }
+
+        .total-chip .tc-icon {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+
+        .total-chip .tc-val {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .total-chip .tc-lbl {
+            font-size: 0.72rem;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        /* Detail tables */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .detail-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+            animation: fadeUp 0.5s ease both;
+        }
+
+        .detail-card:nth-child(1) {
+            animation-delay: 0.15s;
+        }
+
+        .detail-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .detail-card:nth-child(3) {
+            animation-delay: 0.25s;
+        }
+
+        .detail-card:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface2);
+        }
+
+        .detail-header .title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Syne', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .detail-total {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 9px 18px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 9px 18px;
+            font-size: 0.82rem;
+            color: var(--muted2);
+            border-top: 1px solid var(--border);
+        }
+
+        td:first-child {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        td.dep {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            color: var(--accent);
+            text-align: right;
+        }
+
+        .no-data {
+            padding: 18px;
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            animation: fadeUp 0.5s 0.35s ease both;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 22px;
+            border-radius: 10px;
+            font-size: 0.87rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-blue {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 3px 12px rgba(59, 130, 246, 0.25);
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 3px 12px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-outline {
+            background: var(--surface);
+            color: var(--muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            color: #ef4444;
+            border-color: #fca5a5;
+            background: #fef2f2;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .score-hero {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-grid,
+            .totals-row {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .metric+.metric {
+                border-left: none;
+                padding-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="logo">Thermo<span>Calc</span></div>
+        <div class="nav-steps">
+            <div class="ns done">
+                <div class="dot"></div><span>Bâtiment</span>
+            </div>
+            <div class="ns-sep">›</div>
+            <div class="ns done">
+                <div class="dot"></div><span>Éléments</span>
+            </div>
+            <div class="ns-sep">›</div>
+            <div class="ns active">
+                <div class="dot"></div><span>Résultats</span>
+            </div>
+        </div>
+        <div style="width:80px"></div>
+    </nav>
+
+    <div class="page">
+
+        <!-- Hero -->
+        <div class="score-hero">
+            <div class="score-left">
+                <h1 th:text="${batiment.codeBatiment} + ' — Bilan énergétique'"></h1>
+                <p class="subtitle" th:text="${batiment.typeBatiment} + ' · ' + ${batiment.adresseBatiment}"></p>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="val" th:text="${deperdition}"></div>
+                        <div class="unit">Watts (W)</div>
+                        <div class="lbl">Déperdition totale</div>
+                    </div>
+                    <div class="metric">
+                        <div class="val" th:text="${consommation}"></div>
+                        <div class="unit">kWh/m²/an</div>
+                        <div class="lbl">Consommation</div>
+                    </div>
+                    <div class="metric">
+                        <div class="val" th:text="${batiment.surface}"></div>
+                        <div class="unit">m²</div>
+                        <div class="lbl">Surface</div>
+                    </div>
+                </div>
+            </div>
+            <div class="dpe-big">
+                <div class="dpe-circle" th:style="'background:' + ${couleur}" th:text="${classe}"></div>
+                <div class="dpe-label">
+                    <strong>Classe énergétique</strong>
+                    DPE · kWh/m²/an
+                </div>
+            </div>
+        </div>
+
+        <!-- DPE Scale -->
+        <div class="dpe-scale-card">
+            <h2>Échelle de performance énergétique</h2>
+            <div class="dpe-rows">
+                <div class="dpe-row" th:classappend="${classe=='A'} ? 'highlight' : ''">
+                    <div class="dpe-letter" style="background:#1a6b2e">A</div>
+                    <div class="dpe-bar-wrap">
+                        <div class="dpe-bar-fill" style="background:#1a6b2e;width:15%"></div>
+                    </div>
+                    <div class="dpe-range">≤ 70 kWh/m²/an</div>
+                    <span class="dpe-you" style="background:#1a6b2e" th:if="${classe=='A'}">Votre bâtiment ✓</span>
+                </div>
+                <div class="dpe-row" th:classappend="${classe=='B'} ? 'highlight' : ''">
+                    <div class="dpe-letter" style="background:#3a7d29">B</div>
+                    <div class="dpe-bar-wrap">
+                        <div class="dpe-bar-fill" style="background:#3a7d29;width:28%"></div>
+                    </div>
+                    <div class="dpe-range">71 – 110 kWh/m²/an</div>
+                    <span class="dpe-you" style="background:#3a7d29" th:if="${classe=='B'}">Votre bâtiment ✓</span>
+                </div>
+                <div class="dpe-row" th:classappend="${classe=='C'} ? 'highlight' : ''">
+                    <div class="dpe-letter" style="background:#b8860b">C</div>
+                    <div class="dpe-bar-wrap">
+                        <div class="dpe-bar-fill" style="background:#b8860b;width:44%"></div>
+                    </div>
+                    <div class="dpe-range">111 – 180 kWh/m²/an</div>
+                    <span class="dpe-you" style="background:#b8860b" th:if="${classe=='C'}">Votre bâtiment ✓</span>
+                </div>
+                <div class="dpe-row" th:classappend="${classe=='D'} ? 'highlight' : ''">
+                    <div class="dpe-letter" style="background:#c45a00">D</div>
+                    <div class="dpe-bar-wrap">
+                        <div class="dpe-bar-fill" style="background:#c45a00;width:58%"></div>
+                    </div>
+                    <div class="dpe-range">181 – 250 kWh/m²/an</div>
+                    <span class="dpe-you" style="background:#c45a00" th:if="${classe=='D'}">Votre bâtiment ✓</span>
+                </div>
+                <div class="dpe-row" th:classappend="${classe=='E'} ? 'highlight' : ''">
+                    <div class="dpe-letter" style="background:#c0392b">E</div>
+                    <div class="dpe-bar-wrap">
+                        <div class="dpe-bar-fill" style="background:#c0392b;width:72%"></div>
+                    </div>
+                    <div class="dpe-range">251 – 330 kWh/m²/an</div>
+                    <span class="dpe-you" style="background:#c0392b" th:if="${classe=='E'}">Votre bâtiment ✓</span>
+                </div>
+                <div class="dpe-row" th:classappend="${classe=='F'} ? 'highlight' : ''">
+                    <div class="dpe-letter" style="background:#922b21">F</div>
+                    <div class="dpe-bar-wrap">
+                        <div class="dpe-bar-fill" style="background:#922b21;width:86%"></div>
+                    </div>
+                    <div class="dpe-range">331 – 420 kWh/m²/an</div>
+                    <span class="dpe-you" style="background:#922b21" th:if="${classe=='F'}">Votre bâtiment ✓</span>
+                </div>
+                <div class="dpe-row" th:classappend="${classe=='G'} ? 'highlight' : ''">
+                    <div class="dpe-letter" style="background:#4a0000">G</div>
+                    <div class="dpe-bar-wrap">
+                        <div class="dpe-bar-fill" style="background:#4a0000;width:100%"></div>
+                    </div>
+                    <div class="dpe-range">&gt; 420 kWh/m²/an</div>
+                    <span class="dpe-you" style="background:#4a0000" th:if="${classe=='G'}">Votre bâtiment ✓</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Totals -->
+        <div class="totals-row">
+            <div class="total-chip">
+                <div class="tc-icon">🧱</div>
+                <div class="tc-val"
+                    th:text="${#numbers.formatDecimal(#aggregates.sum(batiment.murs.![calculerDeperditionMur()]),1,1)} + ' W'">
+                </div>
+                <div class="tc-lbl">Murs</div>
+            </div>
+            <div class="total-chip">
+                <div class="tc-icon">🪟</div>
+                <div class="tc-val"
+                    th:text="${#numbers.formatDecimal(#aggregates.sum(batiment.ouvrants.![calculerDeperditionOuvrant()]),1,1)} + ' W'">
+                </div>
+                <div class="tc-lbl">Ouvrants</div>
+            </div>
+            <div class="total-chip">
+                <div class="tc-icon">🪨</div>
+                <div class="tc-val"
+                    th:text="${#numbers.formatDecimal(#aggregates.sum(batiment.planchers.![calculerDeperditionPlancher()]),1,1)} + ' W'">
+                </div>
+                <div class="tc-lbl">Planchers</div>
+            </div>
+            <div class="total-chip">
+                <div class="tc-icon">🏠</div>
+                <div class="tc-val"
+                    th:text="${#numbers.formatDecimal(#aggregates.sum(batiment.toitures.![calculerDeperditionToiture()]),1,1)} + ' W'">
+                </div>
+                <div class="tc-lbl">Toitures</div>
+            </div>
+        </div>
+
+        <!-- Detail tables -->
+        <div class="detail-grid">
+            <div class="detail-card">
+                <div class="detail-header">
+                    <div class="title">🧱 Murs</div>
+                    <div class="detail-total"
+                        th:text="${#numbers.formatDecimal(#aggregates.sum(batiment.murs.![calculerDeperditionMur()]),1,1)} + ' W'">
+                    </div>
+                </div>
+                <div class="no-data" th:if="${#lists.isEmpty(batiment.murs)}">Aucun mur renseigné</div>
+                <table th:unless="${#lists.isEmpty(batiment.murs)}">
+                    <tr>
+                        <th>#</th>
+                        <th>Surface</th>
+                        <th>k</th>
+                        <th>Déperdition</th>
+                    </tr>
+                    <tr th:each="m : ${batiment.murs}">
+                        <td th:text="${m.numeroMur}"></td>
+                        <td th:text="${#numbers.formatDecimal(m.surfaceMur,1,2)} + ' m²'"></td>
+                        <td th:text="${m.kMur}"></td>
+                        <td class="dep" th:text="${#numbers.formatDecimal(m.calculerDeperditionMur(),1,2)} + ' W'"></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="detail-card">
+                <div class="detail-header">
+                    <div class="title">🪟 Ouvrants</div>
+                    <div class="detail-total"
+                        th:text="${#numbers.formatDecimal(#aggregates.sum(batiment.ouvrants.![calculerDeperditionOuvrant()]),1,1)} + ' W'">
+                    </div>
+                </div>
+                <div class="no-data" th:if="${#lists.isEmpty(batiment.ouvrants)}">Aucun ouvrant renseigné</div>
+                <table th:unless="${#lists.isEmpty(batiment.ouvrants)}">
+                    <tr>
+                        <th>#</th>
+                        <th>Surface</th>
+                        <th>k</th>
+                        <th>Déperdition</th>
+                    </tr>
+                    <tr th:each="o : ${batiment.ouvrants}">
+                        <td th:text="${o.numeroOuvrant}"></td>
+                        <td th:text="${o.surfaceOuvrant} + ' m²'"></td>
+                        <td th:text="${o.kOuvrant}"></td>
+                        <td class="dep" th:text="${#numbers.formatDecimal(o.calculerDeperditionOuvrant(),1,2)} + ' W'">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="detail-card">
+                <div class="detail-header">
+                    <div class="title">🪨 Planchers</div>
+                    <div class="detail-total"
+                        th:text="${#numbers.formatDecimal(#aggregates.sum(batiment.planchers.![calculerDeperditionPlancher()]),1,1)} + ' W'">
+                    </div>
+                </div>
+                <div class="no-data" th:if="${#lists.isEmpty(batiment.planchers)}">Aucun plancher renseigné</div>
+                <table th:unless="${#lists.isEmpty(batiment.planchers)}">
+                    <tr>
+                        <th>#</th>
+                        <th>Surface</th>
+                        <th>k</th>
+                        <th>Déperdition</th>
+                    </tr>
+                    <tr th:each="p : ${batiment.planchers}">
+                        <td th:text="${p.numeroPlancher}"></td>
+                        <td th:text="${p.surfacePlancher} + ' m²'"></td>
+                        <td th:text="${p.kPlancher}"></td>
+                        <td class="dep" th:text="${#numbers.formatDecimal(p.calculerDeperditionPlancher(),1,2)} + ' W'">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="detail-card">
+                <div class="detail-header">
+                    <div class="title">🏠 Toitures</div>
+                    <div class="detail-total"
+                        th:text="${#numbers.formatDecimal(#aggregates.sum(batiment.toitures.![calculerDeperditionToiture()]),1,1)} + ' W'">
+                    </div>
+                </div>
+                <div class="no-data" th:if="${#lists.isEmpty(batiment.toitures)}">Aucune toiture renseignée</div>
+                <table th:unless="${#lists.isEmpty(batiment.toitures)}">
+                    <tr>
+                        <th>#</th>
+                        <th>Surface</th>
+                        <th>k</th>
+                        <th>Déperdition</th>
+                    </tr>
+                    <tr th:each="t : ${batiment.toitures}">
+                        <td th:text="${t.numeroToiture}"></td>
+                        <td th:text="${t.surfaceToit} + ' m²'"></td>
+                        <td th:text="${t.kToiture}"></td>
+                        <td class="dep" th:text="${#numbers.formatDecimal(t.calculerDeperditionToiture(),1,2)} + ' W'">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <a href="/batiment/elements" class="btn btn-blue">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 5l-7 7 7 7" />
+                </svg>
+                Retour aux éléments
+            </a>
+            <a href="/batiment/nouveau" class="btn btn-green">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M12 5v14M5 12h14" />
+                </svg>
+                Nouveau bâtiment
+            </a>
+            <a href="/reset" class="btn btn-outline">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                </svg>
+                Réinitialiser
+            </a>
+        </div>
+
+    </div>
+</body>
+
+</html>
