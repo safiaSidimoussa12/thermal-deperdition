@@ -77,45 +77,7 @@ thermal-app/
 
 ---
 
-## 🗂️ Diagramme de classes
 
-```
-┌─────────────────────────────┐
-│          Bâtiment           │
-├─────────────────────────────┤
-│ codeBatiment                │
-│ adresseBatiment             │
-│ coordonneesGeographiques    │
-│ typeBatiment                │
-│ surface                     │
-│ volume                      │
-│ anneeConstruction           │
-│ nombreNiveaux               │
-│ nombreOccupants             │
-├─────────────────────────────┤
-│ calculerDeperdition()       │
-│ calculerConsommation()      │
-│ classerEnergie()            │
-└──────┬──────────────────────┘
-       │ 1..*
-  ┌────┴────┐
-  │         │
-┌─▼──┐  ┌──▼─────┐  ┌──────────┐  ┌─────────┐
-│Mur │  │Ouvrant │  │Plancher  │  │Toiture  │
-└────┘  └────────┘  └──────────┘  └─────────┘
-  │         │            │              │
- U×S       U×S          U×S           U×S
-       
-┌──────────────────┐   ┌──────────────────┐
-│  ZoneClimatique  │   │  SourceEnergie   │
-├──────────────────┤   ├──────────────────┤
-│ nomZoneClimatique│   │ nomSource        │
-└──────────────────┘   │ etatSource       │
-                       │ caracteristiques │
-                       └──────────────────┘
-```
-
----
 
 ## 📐 Formules de calcul
 
