@@ -9,7 +9,6 @@
 - [Présentation](#-présentation)
 - [Technologies](#-technologies)
 - [Structure du projet](#-structure-du-projet)
-- [Diagramme de classes](#-diagramme-de-classes)
 - [Formules de calcul](#-formules-de-calcul)
 - [Classification DPE](#-classification-dpe)
 - [Installation & Lancement](#-installation--lancement)
